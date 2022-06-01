@@ -60,11 +60,7 @@ Offload Button (Keyboard) = Tilde
 ```
 
 ## Changelog
-- **v0.0.5 -** Who knows?!
-- **v0.0.4 -** Yet another correction to publish zip
-- **v0.0.3 -** Another correction to publish zip
-- **v0.0.2 -** Correction to publish zip
-- **v0.0.1 -** Initial version
+- **v0.0.5 -** Initial version
 
 ## Known issues
-- Modifier keys don't work on the Shortcut key. This is due an issue with BepinEx's ShortcutKey that I had to work around.
+- Modifier keys don't work on the Shortcut key. This is due to an issue with BepinEx's ShortcutKey that I had to work around.

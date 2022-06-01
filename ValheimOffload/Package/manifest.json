@@ -2,7 +2,7 @@
   "name": "ValheimOffload",
   "description": "",
   "version_number": "0.0.5",
-  "website_url": "",
+  "website_url": "https://github.com/MrManlyPrincess/ValheimOffload",
   "dependencies": [
     "ValheimModding-Jotunn-2.6.1"
   ]
