@@ -1,12 +1,14 @@
 # Valheim Offload
-## Installation (manual)
-
 
 ## Features
 Allows you to offload your inventory into nearby chests at the press of a button.
 
 Ignores containers that are part of the world generation so that you don't accidentally lose items,
 and allows you to designate slots/items to not offload.
+
+## Installation (manual)
+### Manual Install
+Extract ValheimOffload.dll into the BepinEx/plugins folder.
 
 ## Config
 ### Default Config File

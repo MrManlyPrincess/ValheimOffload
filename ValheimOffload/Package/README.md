@@ -1,4 +1,4 @@
-# Valheim Offload
+﻿# Valheim Offload
 ## Installation (manual)
 
 
@@ -11,7 +11,7 @@ and allows you to designate slots/items to not offload.
 ## Config
 ### Default Config File
 
-```
+`
 ## Settings file was created by plugin Valheim Offload v0.0.3
 ## Plugin GUID: com.mrmanlyprincess.ValheimOffload
 
@@ -55,11 +55,9 @@ Items to ignore =
 # Setting type: KeyboardShortcut
 # Default value: Tilde
 Offload Button (Keyboard) = Tilde
-```
+`
 
 ## Changelog
-- **v0.0.5 -** Who knows?!
-- **v0.0.4 -** Yet another correction to publish zip
 - **v0.0.3 -** Another correction to publish zip
 - **v0.0.2 -** Correction to publish zip
 - **v0.0.1 -** Initial version
