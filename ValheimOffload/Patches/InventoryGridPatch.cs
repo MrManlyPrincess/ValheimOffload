@@ -18,9 +18,10 @@ namespace ValheimOffload.Patches
             if (!player) return;
             var width = ___m_inventory.GetWidth();
 
+            ValheimOffload.PopulateParsedConfigValues();
+
             foreach (var allItem in ___m_inventory.GetAllItems())
             {
-                ValheimOffload.PopulateParsedConfigValues();
                 if (!ValheimOffload.IgnoredItemSlots.Contains(allItem.m_gridPos)) continue;
 
                 var index = allItem.m_gridPos.y * width + allItem.m_gridPos.x;

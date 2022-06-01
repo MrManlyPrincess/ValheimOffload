@@ -1,6 +1,4 @@
-﻿# Valheim Offload
-## Installation (manual)
-
+# Valheim Offload
 
 ## Features
 Allows you to offload your inventory into nearby chests at the press of a button.
@@ -8,10 +6,14 @@ Allows you to offload your inventory into nearby chests at the press of a button
 Ignores containers that are part of the world generation so that you don't accidentally lose items,
 and allows you to designate slots/items to not offload.
 
+## Installation (manual)
+### Manual Install
+Extract ValheimOffload.dll into the BepinEx/plugins folder.
+
 ## Config
 ### Default Config File
 
-`
+```
 ## Settings file was created by plugin Valheim Offload v0.0.3
 ## Plugin GUID: com.mrmanlyprincess.ValheimOffload
 
@@ -55,12 +57,10 @@ Items to ignore =
 # Setting type: KeyboardShortcut
 # Default value: Tilde
 Offload Button (Keyboard) = Tilde
-`
+```
 
 ## Changelog
-- **v0.0.3 -** Another correction to publish zip
-- **v0.0.2 -** Correction to publish zip
-- **v0.0.1 -** Initial version
+- **v0.0.5 -** Initial version
 
 ## Known issues
-- Modifier keys don't work on the Shortcut key. This is due an issue with BepinEx's ShortcutKey that I had to work around.
+- Modifier keys don't work on the Shortcut key. This is due to an issue with BepinEx's ShortcutKey that I had to work around.
