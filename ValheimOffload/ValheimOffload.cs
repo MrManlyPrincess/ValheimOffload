@@ -22,7 +22,7 @@ namespace ValheimOffload
     {
         public const string PluginGUID = "com.mrmanlyprincess.ValheimOffload";
         public const string PluginName = "Valheim Offload";
-        public const string PluginVersion = "0.0.5";
+        public const string PluginVersion = "0.0.6";
 
         private static CustomLocalization ModLocalization = LocalizationManager.Instance.GetLocalization();
 

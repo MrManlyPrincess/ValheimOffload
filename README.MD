@@ -60,6 +60,7 @@ Offload Button (Keyboard) = Tilde
 ```
 
 ## Changelog
+- **v0.0.6 -** Minor optimization while inventory is open
 - **v0.0.5 -** Initial version
 
 ## Known issues
