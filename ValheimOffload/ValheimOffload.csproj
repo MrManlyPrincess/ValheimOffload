@@ -120,7 +120,7 @@
   </PropertyGroup>
   <Target Name="EnsureEnvironmentPropsImport" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
-      <ErrorText>This project needs a Environment.props file with the path to your Valheim installation. See https://github.com/Valheim-Modding/ValheimModPlayground. {0} is missing.</ErrorText>
+      <ErrorText>This project needs a Environment.props file with the path to your Valheim installation. {0} is missing.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)Environment.props')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)Environment.props'))" />
   </Target>

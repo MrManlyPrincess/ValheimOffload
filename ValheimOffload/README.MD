@@ -60,8 +60,13 @@ Offload Button (Keyboard) = Tilde
 ```
 
 ## Changelog
-- **v0.0.6 -** Minor optimization while inventory is open
-- **v0.0.5 -** Initial version
+- **v0.0.7**
+  - Fixes for dedicated server
+  - Fixed default KeyboardShortcut to be BackQuote instead of Tilde.
+- **v0.0.6**
+  - Minor optimization while inventory is open
+- **v0.0.5**
+  - Initial version
 
 ## Known issues
 - Modifier keys don't work on the Shortcut key. This is due to an issue with BepinEx's ShortcutKey that I had to work around.

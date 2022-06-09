@@ -22,7 +22,7 @@ namespace ValheimOffload
     {
         public const string PluginGUID = "com.mrmanlyprincess.ValheimOffload";
         public const string PluginName = "Valheim Offload";
-        public const string PluginVersion = "0.0.6";
+        public const string PluginVersion = "0.0.7";
 
         private static CustomLocalization ModLocalization = LocalizationManager.Instance.GetLocalization();
 
@@ -87,7 +87,7 @@ namespace ValheimOffload
                 "Radius in which to search for containers");
 
             OffloadButtonConfig = Config.Bind("Keybindings", "Offload Button (Keyboard)",
-                new KeyboardShortcut(KeyCode.Tilde),
+                new KeyboardShortcut(KeyCode.BackQuote),
                 new ConfigDescription("KeyboardShortcut for OffloadButton keybinding. Modifiers are ignored."));
 
             // OffloadButtonGamepadConfig = Config.Bind("Keybindings", "Offload Button (Gamepad)",
@@ -145,7 +145,7 @@ namespace ValheimOffload
 
         private void HandleInput()
         {
-            if ((Chat.instance && Chat.instance.m_input.isFocused) || Minimap.InTextInput()) return;
+            if (Chat.instance && Chat.instance.m_input.isFocused || Minimap.InTextInput()) return;
             if (!Input.GetKeyDown(OffloadButton.Shortcut.MainKey)) return;
 
             PopulateParsedConfigValues();
@@ -180,9 +180,6 @@ namespace ValheimOffload
         {
             if (!Player.m_localPlayer) return;
 
-            Jotunn.Logger.LogInfo("Entered OffloadIntoNearbyContainers");
-            var items = GetOffloadableItems();
-
             var totalItemsStored = 0;
             var totalContainersStoredIn = 0;
 
@@ -195,26 +192,26 @@ namespace ValheimOffload
 
             foreach (var container in containersInRadius)
             {
-                container.m_nview.ClaimOwnership();
+                if (!container.m_nview.IsOwner())
+                {
+                    Jotunn.Logger.LogDebug(
+                        $"Taking ownership of {container.m_nview.GetZDO().m_uid}, current owner is {container.m_nview.GetZDO().m_owner}.");
 
-                container.SetInUse(true);
-                container.OnContainerChanged();
 
-                var includeContainerInCount = OffloadIntoContainer(items, container, ref totalItemsStored);
-                if (includeContainerInCount) totalContainersStoredIn++;
+                    container.m_nview.ClaimOwnership();
+                    ZDOMan.instance.ForceSendZDO(ZDOMan.instance.GetMyID(), container.m_nview.GetZDO().m_uid);
+                }
 
-                container.SetInUse(false);
+                var includeContainerInCount = OffloadIntoContainer(container, ref totalItemsStored);
+                if (!includeContainerInCount) continue;
 
-                container.GetInventory().Changed();
-                container.OnContainerChanged();
+                totalContainersStoredIn++;
             }
 
-            Player.m_localPlayer.GetInventory().Changed();
-
-            HandleOffloadMessage(totalItemsStored, totalContainersStoredIn, containersInRadius.Count);
+            HandleOffloadMessage(totalItemsStored, totalContainersStoredIn, containersInRadius.Count > 0);
         }
 
-        private List<ItemDrop.ItemData> GetOffloadableItems()
+        private static List<ItemDrop.ItemData> GetOffloadableItems()
         {
             return Player.m_localPlayer.GetInventory().GetAllItems()
                 .Where(item =>
@@ -230,13 +227,13 @@ namespace ValheimOffload
         }
 
         private static void HandleOffloadMessage(int totalItemsStored, int totalContainersStoredIn,
-            int validContainerCount)
+            bool anyValidContainers)
         {
             if (totalItemsStored > 0)
             {
                 Utils.ShowCenterMessage($"Stored {totalItemsStored} items in {totalContainersStoredIn} containers");
             }
-            else if (totalItemsStored == 0 && validContainerCount > 0)
+            else if (totalItemsStored == 0 && anyValidContainers)
             {
                 Utils.ShowCenterMessage("No items were stored");
             }
@@ -246,24 +243,25 @@ namespace ValheimOffload
             }
         }
 
-        private bool OffloadIntoContainer(List<ItemDrop.ItemData> items, Container container, ref int totalItemsStored)
+        private bool OffloadIntoContainer(Container container, ref int totalItemsStored)
         {
             var includeContainerInCount = false;
-            foreach (var item in items)
+            foreach (var item in GetOffloadableItems())
             {
-                var mutableItem = item;
-                if (ProcessItem(Player.m_localPlayer.GetInventory(), container, ref mutableItem,
-                        ref totalItemsStored))
-                {
-                    includeContainerInCount = true;
-                }
+                if (!ProcessItem(Player.m_localPlayer.GetInventory(), container, item, ref totalItemsStored)) continue;
+
+                Jotunn.Logger.LogInfo(
+                    $"Stored {totalItemsStored} {Localization.instance.Localize(item.m_shared.m_name)} in" +
+                    $" {Localization.instance.Localize(container.m_name)} ({container.m_nview.m_zdo.m_owner})");
+
+                includeContainerInCount = true;
             }
 
             return includeContainerInCount;
         }
 
-        private bool ProcessItem(Inventory inventory, Container container, ref ItemDrop.ItemData item,
-            ref int itemsMoved)
+        private bool ProcessItem(Inventory playerInventory, Container container, ItemDrop.ItemData item,
+            ref int totalItemsStored)
         {
             // Omit items that we always want to ignore
             if (item == null || item.m_equiped || item.m_shared.m_maxStackSize == 1) return false;
@@ -276,32 +274,24 @@ namespace ValheimOffload
             if (containerItems.All(containerItem => containerItem.m_shared.m_name != itemName)) return false;
             Jotunn.Logger.LogDebug($"Found chest with {itemName}");
 
-            itemsMoved += FillPartialStacks(inventory, containerInventory, ref item);
-            itemsMoved += FillEmptyStack(inventory, containerInventory, ref item);
+            totalItemsStored += FillPartialStacks(playerInventory, containerInventory, item);
+            totalItemsStored += FillEmptyStack(playerInventory, containerInventory, item);
 
-            var movedItems = itemsMoved > 0;
-
-            if (movedItems)
-            {
-                Jotunn.Logger.LogInfo(
-                    $"Stored {itemsMoved} {Localization.instance.Localize(item.m_shared.m_name)} in {Localization.instance.Localize(container.m_name)}");
-            }
-
-            return movedItems;
+            return totalItemsStored > 0;
         }
 
-        private int FillEmptyStack(Inventory inventory, Inventory containerInventory, ref ItemDrop.ItemData item)
+        private int FillEmptyStack(Inventory playerInventory, Inventory containerInventory, ItemDrop.ItemData item)
         {
             if (item == null || item.m_stack == 0) return 0;
 
             var emptySlot = containerInventory.FindEmptySlot(true);
             if (!emptySlot.IsValidForInventoryGrid()) return 0;
 
-            containerInventory.MoveItemToThis(inventory, item);
+            containerInventory.MoveItemToThis(playerInventory, item);
             return item.m_stack;
         }
 
-        private int FillPartialStacks(Inventory inventory, Inventory containerInventory, ref ItemDrop.ItemData item)
+        private int FillPartialStacks(Inventory playerInventory, Inventory containerInventory, ItemDrop.ItemData item)
         {
             var partialStack = containerInventory.FindFreeStackItem(item.m_shared.m_name, item.m_quality);
             var amountMoved = 0;
@@ -316,7 +306,7 @@ namespace ValheimOffload
 
                 var amountToMove = Mathf.Min(item.m_stack, partialStack.GetAmountToFullStack());
 
-                containerInventory.MoveItemToThis(inventory, item, amountToMove, partialStack.m_gridPos.x,
+                containerInventory.MoveItemToThis(playerInventory, item, amountToMove, partialStack.m_gridPos.x,
                     partialStack.m_gridPos.y);
 
                 Jotunn.Logger.LogDebug($"Added {amountToMove} to partial stack of {item.m_shared.m_name}," +

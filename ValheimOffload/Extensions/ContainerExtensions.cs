@@ -16,13 +16,10 @@
                 return false;
             }
 
-            if (container.GetInventory().IsFull())
-            {
-                Jotunn.Logger.LogDebug("Skipping container that is completely full");
-                return false;
-            }
+            if (!container.GetInventory().IsFull()) return true;
 
-            return true;
+            Jotunn.Logger.LogDebug("Skipping container that is completely full");
+            return false;
         }
     }
 }
