@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -22,7 +23,7 @@ namespace ValheimOffload
     {
         public const string PluginGUID = "com.mrmanlyprincess.ValheimOffload";
         public const string PluginName = "Valheim Offload";
-        public const string PluginVersion = "0.0.7";
+        public const string PluginVersion = "0.0.8";
 
         private static CustomLocalization ModLocalization = LocalizationManager.Instance.GetLocalization();
 
@@ -39,7 +40,8 @@ namespace ValheimOffload
 
         #endregion
 
-        private static ConfigEntry<bool> IgnoreConsumables;
+        private static ConfigEntry<bool> IgnoreFood;
+        private static ConfigEntry<bool> IgnoreMead;
         private static ConfigEntry<bool> IgnoreUnequippedAmmo;
 
         private static ConfigEntry<string> IgnoredItemSlotsRaw;
@@ -94,16 +96,18 @@ namespace ValheimOffload
             //     InputManager.GamepadButton.LeftShoulder,
             //     new ConfigDescription("Gamepad button for OffloadButton keybinding"));
 
-            IgnoreConsumables = Config.Bind("Ignore Options", "Ignore Consumables", true,
-                "If true, consumable items will not be offloaded");
+            IgnoreFood = Config.Bind("Ignore Options", "Ignore Food", true,
+                "If true, food will not be offloaded");
+
+            IgnoreMead = Config.Bind("Ignore Options", "Ignore Mead", true,
+                "If true, mead will not be offloaded");
 
             IgnoreUnequippedAmmo = Config.Bind("Ignore Options", "Ignore Unequipped Ammo", true,
                 "If true, unequipped ammo will not be offloaded");
 
             IgnoredItemSlotsRaw = Config.Bind("Ignore Options", "Item slots to ignore", "0,2|1,2|2,2|0,3|1,3|2,3|",
                 "A pipe-delimited list of item slots to ignore. Each slot is referenced by a zero-based Vector2. " +
-                "First slot is '0,0', last slot is '3,7'." +
-                "If a value in the Vector2 is left blank, the entire column/row will be affected.");
+                "First slot is '0,0', last slot is '3,7'.");
 
             IgnoredItemsRaw = Config.Bind("Ignore Options", "Items to ignore", string.Empty,
                 "A comma-delimited list of item names to ignore. Examples: '$item_hammer, $item_hoe, $item_leatherscraps'");
@@ -218,7 +222,8 @@ namespace ValheimOffload
                     item != null &&
                     !item.m_equiped &&
                     item.m_shared.m_maxStackSize != 1 &&
-                    (!IgnoreConsumables.Value || item.m_shared.m_itemType != ItemDrop.ItemData.ItemType.Consumable) &&
+                    (!IgnoreFood.Value || !item.IsFood()) &&
+                    (!IgnoreMead.Value || item.IsFood() || item.m_shared.m_itemType != ItemDrop.ItemData.ItemType.Consumable) &&
                     (!IgnoreUnequippedAmmo.Value || item.m_shared.m_itemType != ItemDrop.ItemData.ItemType.Ammo) &&
                     !IgnoredItems.Contains(item.m_shared.m_name) &&
                     !IgnoredItemSlots.Contains(item.m_gridPos)
@@ -320,5 +325,39 @@ namespace ValheimOffload
         }
 
         #endregion
+
+        public static void ToggleIgnoredItem(string itemName)
+        {
+            if (IgnoredItems.Contains(itemName))
+            {
+                var value = Regex.Replace(IgnoredItemsRaw.Value, $"\\,*\\s*{itemName}", "");
+                IgnoredItemsRaw.Value = value;
+            }
+            else
+            {
+                var endsWithDelimiter = Regex.Match(IgnoredItemsRaw.Value, "\\,\\s*$").Success;
+                IgnoredItemsRaw.Value += endsWithDelimiter ? itemName : $",{itemName}";
+            }
+            
+            PopulateParsedConfigValues(true);
+        }
+
+        public static void ToggleIgnoredSlot(Vector2i slot)
+        {
+            if (IgnoredItemSlots.Contains(slot))
+            {
+                var value = Regex.Replace(IgnoredItemsRaw.Value, $"\\|*\\s*{slot.x}\\,{slot.y}", "");
+                IgnoredItemsRaw.Value = value;
+            }
+            else
+            {
+                var endsWithDelimiter = Regex.Match(IgnoredItemsRaw.Value, "\\|\\s*$").Success;
+                var slotText = $"{slot.x},{slot.y}";
+                
+                IgnoredItemsRaw.Value += endsWithDelimiter ? slotText : $"|{slotText}";
+            }
+            
+            PopulateParsedConfigValues(true);
+        }
     }
 }

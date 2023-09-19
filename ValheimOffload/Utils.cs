@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using ValheimOffload.Extensions;
@@ -47,21 +48,9 @@ namespace ValheimOffload
                 var x = ParseAndClampInt(coords[0], 0, maxWidth);
                 var y = ParseAndClampInt(coords[1], 0, maxHeight);
 
-                if (!x.HasValue && !y.HasValue) continue;
+                if (!x.HasValue || !y.HasValue) continue;
 
-                var minX = x ?? 0;
-                var maxX = x ?? maxWidth;
-
-                var minY = y ?? 0;
-                var maxY = y ?? maxHeight;
-
-                for (var width = minX; width <= maxX; width++)
-                {
-                    for (var height = minY; height <= maxY; height++)
-                    {
-                        ignoredItemSlots.Add(new Vector2i(width, height));
-                    }
-                }
+                ignoredItemSlots.Add(new Vector2i(x.Value, y.Value));
             }
 
             return ignoredItemSlots

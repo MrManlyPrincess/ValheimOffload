@@ -11,5 +11,10 @@
         {
             return item.m_shared.m_maxStackSize - item.m_stack;
         }
+
+        public static bool IsFood(this ItemDrop.ItemData item)
+        {
+            return item.m_shared.m_food > 0.0 || item.m_shared.m_foodStamina > 0.0;
+        }
     }
 }

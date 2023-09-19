@@ -89,6 +89,7 @@
     <Compile Include="Extensions\Vector3Extensions.cs" />
     <Compile Include="Patches\ContainerPatch.cs" />
     <Compile Include="Patches\InventoryGridPatch.cs" />
+    <Compile Include="Patches\ItemDataPatch.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="ValheimOffload.cs" />

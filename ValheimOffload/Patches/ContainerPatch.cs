@@ -9,7 +9,7 @@ namespace ValheimOffload.Patches
         [HarmonyPostfix]
         static void Awake(Container __instance)
         {
-            if (!__instance.m_piece) return;
+            if (__instance.m_nview && __instance.m_nview.m_ghost) return;
             if (__instance.name.Contains("TreasureChest_")) return;
 
             Jotunn.Logger.LogInfo($"Added {__instance.name} to AllContainers");
